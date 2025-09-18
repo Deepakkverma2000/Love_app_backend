@@ -1,0 +1,63 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: love-app-backend
+    env: node
+    plan: starter # Change to 'standard' or 'pro' for production
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # Server Configuration
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000 # Render uses port 10000 by default
+
+      # Frontend URL (for CORS)
+      - key: FRONTEND_URL
+        value: http://localhost:3000 # Update this to your Flutter web URL
+
+      # WhatsApp Cloud API Configuration
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false # Set this in Render dashboard for security
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false # Set this in Render dashboard for security
+
+      # JWT Configuration
+      - key: JWT_SECRET
+        generateValue: true # Render will generate a secure random value
+
+      # Redis Configuration (Optional - for caching)
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: love-app-redis
+          property: connectionString
+
+      # Rate Limiting
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000 # 15 minutes
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+
+      # Supabase Configuration
+      - key: SUPABASE_URL
+        sync: false # Set this in Render dashboard for security
+      - key: SUPABASE_ANON_KEY
+        sync: false # Set this in Render dashboard for security
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false # Set this in Render dashboard for security
+
+  # Redis Service (Optional - for caching and rate limiting)
+  - type: redis
+    name: love-app-redis
+    plan: starter # Change to 'standard' or 'pro' for production
+    maxmemoryPolicy: allkeys-lru
+# Database (if you need PostgreSQL instead of Supabase)
+# Uncomment and configure if you want to use Render's PostgreSQL
+# databases:
+#   - name: love-app-db
+#     plan: starter  # Change to 'standard' or 'pro' for production
+#     databaseName: loveapp
+#     user: loveapp_user
